@@ -64,17 +64,17 @@ embed_model = AzureOpenAIEmbedding(
 )
 
 
-data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data_1')
 print(data_dir)
 
 documents = SimpleDirectoryReader(data_dir).load_data()
-parser = SentenceSplitter(chunk_size=250, chunk_overlap=40) #(chunk_size=80, chunk_overlap=20, embed_model=embed_model)
+parser = SentenceSplitter(chunk_size=120, chunk_overlap=0) #(chunk_size=80, chunk_overlap=20, embed_model=embed_model)
 # parser = SemanticSplitterNodeParser(chunk_size=80, chunk_overlap=20, embed_model=embed_model)
 nodes = parser.get_nodes_from_documents(documents, show_progress=True)
 
 
 
-pinecone_vector_store = PineconeVectorStore(api_key=PINECONE_API_KEY, index_name=pinecone_index, environment=PINECONE_API_ENV, namespace="alice_new_1")
+pinecone_vector_store = PineconeVectorStore(api_key=PINECONE_API_KEY, index_name=pinecone_index, environment=PINECONE_API_ENV, namespace="alice_new_5")
 
 pipeline = IngestionPipeline(
     transformations=[

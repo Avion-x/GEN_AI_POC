@@ -29,19 +29,8 @@ pinecone_vector_store = PineconeVectorStore(
     api_key=PINECONE_API_KEY,
     index_name=pinecone_index,
     environment=PINECONE_API_ENV,
-    namespace="alice_new_1"
+    namespace="alice_new_5"
 )
-
-# Configure Azure OpenAI LLM
-# llm = AzureOpenAI(
-#     # model="gpt-35-turbo",
-#     deployment_name = "OpenAIGPT35Turbo",
-#     api_key=OPENAI_API_KEY,
-#     azure_endpoint=AZURE_OPENAI_ENDPOINT,
-#     api_version="2023-07-01-preview"
-# )
-
-
 
 # Create Azure OpenAI embedding model
 embed_model = AzureOpenAIEmbeddings(
@@ -72,50 +61,16 @@ if answer:
         docs.append(res)
         
 
-from azure.core.credentials import AzureKeyCredential
-credential = AzureKeyCredential(OPENAI_API_KEY)
-
-
-from azure.ai.textanalytics import TextAnalyticsClient
-text_analytics_client = TextAnalyticsClient(
-    endpoint=AZURE_OPENAI_ENDPOINT,
-    credential=credential
-)
-
-
-# Send combined content to LLM for further processing or summarization
-llm_prompt = f"Here is some information retrieved from the knowledge base:\n{top_content}\n"
-llm_prompt += "Can you summarize the key points or provide additional insights?"
-# llm_response = llm.run(llm_prompt)
-
-# print(docs)
-
-
-documents = [{"id": "1", "text": llm_prompt}]
-tasks = ["summarization"]  # Replace with other desired tasks (e.g., "key_phrases")
-# response = text_analytics_client.analyze_sentiment(documents=docs)
-
-
-# response = text_analytics_client.analyze_text(documents=[llm_prompt], tasks=["summarization"])
-# for document in response.documents:
-#     for summary in document.summarization:
-#         llm_response = summary.sentence
+print("result from vector database is :  ")
+for i in docs:
+    print(i)
+    print("--------------")
 
 
 from langchain_community.chat_models import ChatCohere
 from langchain_core.messages import AIMessage, HumanMessage
 
 cohere_chat_model = ChatCohere(cohere_api_key=os.environ["COHERE_API_KEY"])
-
-# # Send a chat message without chat history
-# current_message = [HumanMessage(content="Generate unit test cases for router mx480")]
-# print(cohere_chat_model(current_message))
-
-# Send a chat message with chat history, note the last message is the current user message
-current_message_with_prompt = [
-    HumanMessage(content=f"Mx480 protocol configurations are {top_content}"),
-    AIMessage(content="You are a best network test engineer?"),
-    HumanMessage(content="Generate unit test cases for router mx480") ]
 
 current_message_with_prompt = [
     HumanMessage(content=f"Here is some information retrieved from the knowledge base for the query {query} : {docs}. Give me the summarized results in one or two sentences")
@@ -125,14 +80,21 @@ current_message_with_prompt = [
 a = cohere_chat_model.invoke(current_message_with_prompt)
 
 print(current_message_with_prompt)
-
+print()
 print(a.content)
 
+prompt = f"Generate 2 unit test cases and 2 python test scripts for mx480 router having knowledge base data for query {query} is {a.content}."
 
-# llm_response = llm.invoke(llm_prompt)
+current_message_with_prompt = [
+    HumanMessage(content= prompt+''' Each testcase and testscript should be encapsulated within its own separate JSON object, and it is an object under the "testname" key. All these JSON objects should be assembled within a Python list, resulting in [\{ "testname":"", "testcase":{}, "testscript":{}}] Each test case should include a testname, objective, steps (list of expected results), relevant test data. Make sure each test script JSON object includes the following fields: 'testname', 'objective', 'file_name', 'init_scripts'. The 'init_scripts' field should contain pip install commands for all required packages, 'script' (given in triple quotes), 'run_command' (a command to execute the python file) and 'expected_result'. The Python list with the JSON objects should not include any unrelated context or information. Find the starting delimiter as ###STARTLIST### and the ending delimiter as ###ENDLIST###''')
+]
 
-# Print LLM response
-# print(llm_response)
+b = cohere_chat_model.invoke(current_message_with_prompt)
+
+print(current_message_with_prompt)
+print()
+print(b.content)
+
 
 
 

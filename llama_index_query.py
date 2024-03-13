@@ -46,9 +46,9 @@ embed_model = AzureOpenAIEmbedding(
     api_version=api_version,
 )
 
-# from llama_index.core import Settings
+from llama_index.core import Settings
 # Settings.llm = llm
-# Settings.embed_model = embed_model
+Settings.embed_model = embed_model
 
 
 # Instantiate VectorStoreIndex object from your vector_store object
